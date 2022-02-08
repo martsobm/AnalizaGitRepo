@@ -1,6 +1,85 @@
 ---
-output: github_document
+# El segmento entre --- se denomina cabecera YALM y determina el formato y tipo de documento generado
+# Las opciones dependen del tipo de documento que se quiera generar
+# Ver https://bookdown.org/yihui/rmarkdown/ 
+
+title: "Proyecto para analizar históricos GIT"
+subtitle: Tratamiento de Datos. Grado en Ciencia de Datos- UV
+author: "Marcelino Martínez Sober"
+#Pone la fecha de generación del documento
+date:  "`r Sys.Date()`"  #Pondría la fecha del día actual
+# Para que en lugar de "Contents" ponga "Indice" al incluir la tabla de contenido
+
+params:
+  lang: ES
+lang: "`r switch(params$lang, ES = 'es-ES', EN = 'en-US')`"
+
+# Por defecto se generará un salida html
+# Si si quieres otras salidas o varias de ellas descomenta lo que proceda
+output:
+# Salida pdf. Si se incluye código en LaTex necesitarás tener instalado un compilador de Latex
+# pdf_document:
+#   toc: yes      # Tabla de contenido (índice)
+#   toc_depth: 3  # Número de niveles de la tabla de contenido (índice) # 1, ##2,###3
+#    number_sections: yes # Numeración de las secciones
+# Salida html, 
+  html_document:
+    echo: yes
+    number_sections: yes
+    theme: cerulean    # Aspecto y estilo,otras opciones: cerulean, journal, flatly, darkly, readable, spacelab, united, cosmo, lumen, paper, sandstone, simplex, and yeti 
+    toc: yes
+# Salida html_notebook, como html, pero con algunas opciones de visualización
+  html_notebook:
+    echo: yes
+    number_sections: yes
+    toc: yes
+# Esto nos permite traducir estas etiquetas para que aparezcan en otro idioma en caso de que se usen en el documento para referenciar a figuras, tablas, etc
+language:
+  label:
+    fig: 'Figura '
+    tab: 'Tabla '
+    eq: 'Ecuación '
+    thm: 'Teorema '
+    lem: 'Lema '
+    def: 'Definición '
+    cor: 'Corolario '
+    prp: 'Proposición '
+    exm: 'Ejemplo '
+    exr: 'Ejercicio '
+    proof: 'Demostración. '
+    remark: 'Nota: '
+    solution: 'Solución. '
 ---
+
+```{r setup, cache = F, echo = F, message = F, warning = F, tidy = F}
+
+# CONFIGURACIÓN GENERAL
+library(knitr)
+options(width = 100)
+
+# Opciones generales de los chucks. Se utilizarán salvo cambios en el chunk
+opts_chunk$set(echo=F, message = F, error = F, warning = F, comment = NA, fig.align = 'center', dpi = 200, tidy = F, cache.path = '.cache/', fig.path = './figura/')
+
+# Opciones generales de dígitos cuando se incluyen tablas
+#options(xtable.type = 'html')
+knit_hooks$set(inline = function(x) {
+  
+  if(is.numeric(x)) {
+    round(x, getOption('digits'))
+  } else {
+    paste(as.character(x), collapse = ', ')
+  }
+})
+#knit_hooks$set(plot = knitr:::hook_plot_html)
+```
+
+
+```{r, echo=FALSE}
+
+# Especificamos las librerías necesarias en esta lista
+
+packages = c("tidyverse","knitr",'glue','stringr','forcats','tidygraph','ggraph','tidytext')
+
 
 ```{r, echo = FALSE}
 knitr::opts_chunk$set(
@@ -41,6 +120,8 @@ library(tidytext)
 
 We'll explore the open-source [ggplot2 repo](https://github.com/tidyverse/ggplot2) by copying it to our local machine with [`git clone`](https://git-scm.com/docs/git-clone), typically run on a command-line like:
 
+
+
 ```{bash, eval = FALSE}
 git clone <repository_url> <directory>
 ```
@@ -53,25 +134,55 @@ Find the `<repository_url>` for [github.com](https://github.com/) projects by cl
 
 The R code below clones the ggplot2 git repo into a temporary directory called `"git_repo"` (let [Alexander Matrunich](https://twitter.com/matrunich) teach you more about temp directories and files [here](http://rstat.consulting/blog/temporary-dir-and-files-in-r/?utm_content=buffer0d542&utm_medium=social&utm_source=twitter.com&utm_campaign=buffer)). `system()` invokes these commands from R (instead of using a command-line directly) and the [glue package](http://glue.tidyverse.org/) beautifully handles the strings for us.
 
-```{r, warning = TRUE}
+
+
+
+
+
+<!-- ```{r, warning = TRUE, eval=FALSE} -->
+<!-- # Remote repository URL -->
+<!-- repo_url <- "https://github.com/tidyverse/ggplot2.git" -->
+
+<!-- # Directory into which git repo will be cloned -->
+<!-- clone_dir <- file.path(tempdir(), "git_repo") -->
+
+<!-- # Create command -->
+<!-- clone_cmd <- glue("git clone {repo_url} {clone_dir}") -->
+
+<!-- # Invoke command -->
+<!-- system(clone_cmd) -->
+<!-- ``` -->
+
+Analizamos un repositorio ejemplo
+
+```{r}
+rm(list=ls())
 # Remote repository URL
 repo_url <- "https://github.com/tidyverse/ggplot2.git"
 
-# Directory into which git repo will be cloned
-clone_dir <- file.path(tempdir(), "git_repo")
+# Si no uso ssh se queda colgado
+#repo_url <- "git@github.com:martsobm/Tarea0_2022_GitHub.git"
 
+# Directory into which git repo will be cloned
+# Si existe lo borro
+if(dir.exists("git_repo")){
+  unlink("git_repo", recursive = TRUE)
+}
+ dir.create('git_repo')
+ clone_dir <- file.path("git_repo")
 # Create command
 clone_cmd <- glue("git clone {repo_url} {clone_dir}")
 
 # Invoke command
 system(clone_cmd)
 ```
-
 Check the directory contents:
 
 ```{r}
 list.files(clone_dir)
 ```
+
+
 
 ## Get tidy git history
 
@@ -89,7 +200,7 @@ This default output is nice but difficult to parse. Fortunately, `git log` has t
 ```{r}
 log_format_options <- c(datetime = "cd", commit = "h", parents = "p", author = "an", subject = "s")
 option_delim <- "\t"
-log_format   <- glue("%{log_format_options}") %>% collapse(option_delim)
+log_format   <- glue("%{log_format_options}") %>% glue_collapse(option_delim)
 log_options  <- glue('--pretty=format:"{log_format}" --date=format:"%Y-%m-%d %H:%M:%S"')
 log_cmd      <- glue('git -C {clone_dir} log {log_options}')
 log_cmd
@@ -288,55 +399,55 @@ ggraph_git <- . %>%
   {ggraph(., layout = "manual") + theme_graph() + labs(caption = "Post by @drsimonj")}
 ```
 
-Using this pipeline:
+<!-- Using this pipeline: -->
 
-```{r}
-git_graph %>% 
-  ggraph_git() +
-    geom_edge_link(alpha = .1) +
-    geom_node_point(aes(color = factor(branch)), alpha = .3) +
-    theme(legend.position = "none") +
-    ggtitle("Commit history of ggplot2")
-```
+<!-- ```{r} -->
+<!-- git_graph %>%  -->
+<!--   ggraph_git() + -->
+<!--     geom_edge_link(alpha = .1) + -->
+<!--     geom_node_point(aes(color = factor(branch)), alpha = .3) + -->
+<!--     theme(legend.position = "none") + -->
+<!--     ggtitle("Commit history of ggplot2") -->
+<!-- ``` -->
 
-Much better! You can go crazy with how you'd like to visualise the repo. For example, here we filter on a specific date range:
+<!-- Much better! You can go crazy with how you'd like to visualise the repo. For example, here we filter on a specific date range: -->
 
-```{r}
-git_graph %>% 
-  activate(nodes) %>% 
-  filter(datetime > "2015-11-01", datetime < "2016-08-01") %>% 
-  ggraph_git() +
-    geom_edge_link(alpha = .1) +
-    geom_node_point(aes(color = factor(branch)), alpha = .3) +
-    theme(legend.position = "none") +
-    ggtitle("Git history of ggplot2",
-            subtitle = "2015-11 to 2016-08")
-```
+<!-- ```{r} -->
+<!-- git_graph %>%  -->
+<!--   activate(nodes) %>%  -->
+<!--   filter(datetime > "2015-11-01", datetime < "2016-08-01") %>%  -->
+<!--   ggraph_git() + -->
+<!--     geom_edge_link(alpha = .1) + -->
+<!--     geom_node_point(aes(color = factor(branch)), alpha = .3) + -->
+<!--     theme(legend.position = "none") + -->
+<!--     ggtitle("Git history of ggplot2", -->
+<!--             subtitle = "2015-11 to 2016-08") -->
+<!-- ``` -->
 
-Here commits are highlighted for the top authors:
+<!-- Here commits are highlighted for the top authors: -->
 
-```{r}
-# 10 most-common authors
-top_authors <- git_graph %>% 
-  activate(nodes) %>% 
-  as_tibble() %>% 
-  count(author, sort = TRUE) %>% 
-  top_n(10, n) %>% 
-  pull(author)
+<!-- ```{r} -->
+<!-- # 10 most-common authors -->
+<!-- top_authors <- git_graph %>%  -->
+<!--   activate(nodes) %>%  -->
+<!--   as_tibble() %>%  -->
+<!--   count(author, sort = TRUE) %>%  -->
+<!--   top_n(10, n) %>%  -->
+<!--   pull(author) -->
 
-# Plot
-git_graph %>% 
-  activate(nodes) %>%
-  filter(datetime > "2015-11-01", datetime < "2016-08-01") %>% 
-  mutate(author = factor(author, levels = top_authors),
-         author = fct_explicit_na(author, na_level = "Other")) %>% 
-  ggraph_git() +
-    geom_edge_link(alpha = .1) +
-    geom_node_point(aes(color = author), alpha = .3) +
-    theme(legend.position = "bottom") +
-    ggtitle("ggplot2 commits by author",
-            subtitle = "2015-11 to 2016-08")
-```
+<!-- # Plot -->
+<!-- git_graph %>%  -->
+<!--   activate(nodes) %>% -->
+<!--   filter(datetime > "2015-11-01", datetime < "2016-08-01") %>%  -->
+<!--   mutate(author = factor(author, levels = top_authors), -->
+<!--          author = fct_explicit_na(author, na_level = "Other")) %>%  -->
+<!--   ggraph_git() + -->
+<!--     geom_edge_link(alpha = .1) + -->
+<!--     geom_node_point(aes(color = author), alpha = .3) + -->
+<!--     theme(legend.position = "bottom") + -->
+<!--     ggtitle("ggplot2 commits by author", -->
+<!--             subtitle = "2015-11 to 2016-08") -->
+<!-- ``` -->
 
 I hope this gives you enough to start having fun with these sorts of visualisations!
 
