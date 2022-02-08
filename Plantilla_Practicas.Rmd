@@ -120,7 +120,9 @@ Analizamos un repositorio ejemplo
 rm(list=ls())
 # Remote repository URL
 repo_url <- "https://github.com/tidyverse/ggplot2.git"
-#repo_url <- "https://github.com/martsobm/Tarea0_2022_GitHub_Fase2.git"
+
+# Si no uso ssh se queda colgado
+#repo_url <- "git@github.com:martsobm/Tarea0_2022_GitHub.git"
 
 # Directory into which git repo will be cloned
 # Si existe lo borro
@@ -139,6 +141,14 @@ system(clone_cmd)
 Comprobamos contenido de los directorios
 ```{r}
 list.files(clone_dir)
+```
+#Get tidy git history
+
+You can now access the git history of the local repo using git log (making sure to target the right directory with -C). Examine the last few commits via:
+
+```{r}
+system(glue('git -C {clone_dir} log -3'))
+
 ```
 
 
