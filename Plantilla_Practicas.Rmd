@@ -78,7 +78,7 @@ knit_hooks$set(inline = function(x) {
 
 # Especificamos las librerías necesarias en esta lista
 
-packages = c("tidyverse","knitr")
+packages = c("tidyverse","knitr",'glue','stringr','forcats','tidygraph','ggraph','tidytext')
 
 #use this function to check if each package is on the local machine
 #if a package is installed, it will be loaded
@@ -98,3 +98,47 @@ search()
 # Introducción
 
 Procedimiento para analizar ficheros git. Se ha obtenido del enlace [Guide to tidy git analysis](https://www.r-bloggers.com/2018/03/guide-to-tidy-git-analysis/)
+
+Cargamos los paquetes que previamente hemos instalado con el sistema automatizado.
+
+```{r, echo=FALSE}
+# Parts 1 and 2
+library(tidyverse)
+library(glue)
+library(stringr)
+library(forcats)
+
+# Part 3
+library(tidygraph)
+library(ggraph)
+library(tidytext)
+```
+
+Analizamos un repositorio ejemplo
+
+```{r}
+# Remote repository URL
+#repo_url <- "https://github.com/tidyverse/ggplot2.git"
+repo_url <- "https://github.com/martsobm/Tarea0_2022_GitHub_Fase2.git"
+
+# Directory into which git repo will be cloned
+# Si existe lo borro
+if(dir.exists(file.path(tempdir(), "git_repo"))){
+  unlink(file.path(tempdir(), "git_repo"), recursive = TRUE)
+  clone_dir <- file.path(tempdir(), "git_repo")
+}
+
+# Create command
+clone_cmd <- glue("git clone {repo_url} {clone_dir}")
+
+# Invoke command
+system(clone_cmd)
+```
+
+Comprobamos contenido de los directorios
+```{r}
+list.files(clone_dir)
+```
+
+
+
