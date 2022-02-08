@@ -79,7 +79,17 @@ knit_hooks$set(inline = function(x) {
 # Especificamos las librerías necesarias en esta lista
 
 packages = c("tidyverse","knitr",'glue','stringr','forcats','tidygraph','ggraph','tidytext')
+package.check <- lapply(packages, FUN = function(x) {
+  if (!require(x, character.only = TRUE)) {
+    install.packages(x, dependencies = TRUE,repos='http://cran.rediris.es')
+  }
+  library(x, character.only = TRUE)
+})
 
+#verify they are loaded
+search()
+
+```
 
 [\@drsimonj](https://twitter.com/drsimonj) here to help you embark on git repo analyses!
 
@@ -104,21 +114,21 @@ library(tidytext)
 
 # Part 1: Git repo to a tidy data frame
 
-## Get a git repo
+<!-- ## Get a git repo -->
 
-We'll explore the open-source [ggplot2 repo](https://github.com/tidyverse/ggplot2) by copying it to our local machine with [`git clone`](https://git-scm.com/docs/git-clone), typically run on a command-line like:
+<!-- We'll explore the open-source [ggplot2 repo](https://github.com/tidyverse/ggplot2) by copying it to our local machine with [`git clone`](https://git-scm.com/docs/git-clone), typically run on a command-line like: -->
 
 
 
-```{bash, eval = FALSE}
-git clone <repository_url> <directory>
-```
+<!-- ```{bash, eval = FALSE} -->
+<!-- git clone <repository_url> <directory> -->
+<!-- ``` -->
 
-Find the `<repository_url>` for [github.com](https://github.com/) projects by clicking "Clone or download".
+<!-- Find the `<repository_url>` for [github.com](https://github.com/) projects by clicking "Clone or download". -->
 
-<img src="../ggplot2_gitclone.png">
+<!-- <img src="../ggplot2_gitclone.png"> -->
 
-`<directory>` is optional but useful for us to clone into a specific location.
+<!-- `<directory>` is optional but useful for us to clone into a specific location. -->
 
 The R code below clones the ggplot2 git repo into a temporary directory called `"git_repo"` (let [Alexander Matrunich](https://twitter.com/matrunich) teach you more about temp directories and files [here](http://rstat.consulting/blog/temporary-dir-and-files-in-r/?utm_content=buffer0d542&utm_medium=social&utm_source=twitter.com&utm_campaign=buffer)). `system()` invokes these commands from R (instead of using a command-line directly) and the [glue package](http://glue.tidyverse.org/) beautifully handles the strings for us.
 
