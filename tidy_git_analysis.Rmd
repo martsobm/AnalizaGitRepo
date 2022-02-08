@@ -81,18 +81,6 @@ knit_hooks$set(inline = function(x) {
 packages = c("tidyverse","knitr",'glue','stringr','forcats','tidygraph','ggraph','tidytext')
 
 
-```{r, echo = FALSE}
-knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>",
-  fig.path = "figs/",
-  fig.height = 6,
-  fig.width = 7,
-  fig.align = "center",
-  fig.ext = "png"
-)
-```
-
 [\@drsimonj](https://twitter.com/drsimonj) here to help you embark on git repo analyses!
 
 Ever wondered who contributes to git repos? How their contributions have changed over time? What sort of conventions different authors use in their commit messages? Maybe you were inspired by [Mara Averick](https://twitter.com/dataandme) to [contribute to tidyverse packages](https://www.rstudio.com/resources/videos/contributing-to-tidyverse-packages/) and wonder how you fit in?
