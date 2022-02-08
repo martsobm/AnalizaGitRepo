@@ -117,17 +117,18 @@ library(tidytext)
 Analizamos un repositorio ejemplo
 
 ```{r}
+rm(list=ls())
 # Remote repository URL
-#repo_url <- "https://github.com/tidyverse/ggplot2.git"
-repo_url <- "https://github.com/martsobm/Tarea0_2022_GitHub_Fase2.git"
+repo_url <- "https://github.com/tidyverse/ggplot2.git"
+#repo_url <- "https://github.com/martsobm/Tarea0_2022_GitHub_Fase2.git"
 
 # Directory into which git repo will be cloned
 # Si existe lo borro
-if(dir.exists(file.path(tempdir(), "git_repo"))){
-  unlink(file.path(tempdir(), "git_repo"), recursive = TRUE)
-  clone_dir <- file.path(tempdir(), "git_repo")
+if(dir.exists("git_repo")){
+  unlink("git_repo", recursive = TRUE)
 }
-
+ dir.create('git_repo')
+ clone_dir <- file.path("git_repo")
 # Create command
 clone_cmd <- glue("git clone {repo_url} {clone_dir}")
 
